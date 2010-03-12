@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+ "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+   <title>What About Kyle?</title>
+   <link rel="stylesheet" href="http://yui.yahooapis.com/2.7.0/build/reset-fonts-grids/reset-fonts-grids.css" type="text/css">
+   <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.0r4/build/base/base-min.css">
+</head>
+<body onunload="GUnload()">
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAGDdf_nC4iDfqhvjcgc-9GBQoRtT7WMMfqjastn1YMcb_xa202xRqrdfywvew-1OKeWV9C02GyHC0jA" type="text/javascript"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="../view/js/wak.js"></script>
+<script type="text/javascript" src="../view/js/carOverlay.js"></script>
+<script type="text/javascript">
+	$(function() {
+		var map = new GMap2(document.getElementById("map_canvas"));
+		// Georgia Tech
+		map.setCenter(new GLatLng(33.7784626, -84.3988806), 15);
+        
+
+		
+		
+
+		map.setUIToDefault();
+		$('form#locationBox').submit(function() {
+			var query = $('#locationBoxField').val();
+			wak.centerMap(map, query, function() {
+				alert("Cannot resolve location: " + query);
+			});
+			return false;
+		});
+		
+		$('button#addCar').click(function() {
+			var listener = GEvent.addListener(map, "click", function(overlay, point) {
+				if (!overlay) {
+					new CarOverlay(point).place(map);
+					GEvent.removeListener(listener);
+				}
+			});
+		});
+		
+	});
+</script>
+<div id="doc2" class="yui-t7">
+   <div id="hd"><h1>Header</h1></div>
+   <div id="bd" role="main">
+	<div role="navigation" class="yui-g">
+	<form id="locationBox" action="#">
+		<input type="text" id="locationBoxField" /> <input type="submit" value="Update Location"/>
+	</form>
+	<button id="addCar">Add Car</button>
+	<!-- YOUR DATA GOES HERE -->
+	</div>
+<div role="application" class="yui-g">
+	
+<div id="map_canvas" style="width: 100%; height: 500px"></div>
+	</div>
+
+	</div>
+   <div id="ft" role="contentinfo"><p>Footer</p></div>
+</div>
+<div id="carInfo" style="display:none">
+	<h1>Hello World</h1>
+	<ul><li>1</li><li>2</li></ul>
+</div>
+</body>
+</html>
