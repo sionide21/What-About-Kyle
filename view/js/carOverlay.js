@@ -4,6 +4,7 @@
 	 window.CarOverlay = function(point) {
 		var marker;
 		var data = {};
+		var map;
 		var formPane = false;
 		
 		function init() {
@@ -34,6 +35,16 @@
 				$('FORM.addPassengerBox INPUT.addPassengerBox',dom).val('');
 				return false;
 			});
+			
+			$('.deleteButton', dom).click(function() {
+				msgBox.prompt(
+					'Are you sure you want to delete this car?', 
+					function() {
+						map.removeOverlay(marker);
+					}
+				);
+			});
+			
 			return dom;
 		}
 		
@@ -62,7 +73,8 @@
 			formPane = renderInfo();
 		}
 		
-		this.place = function(map) {
+		this.place = function(m) {
+			map = m;
 			map.addOverlay(marker);
 		}
 		
