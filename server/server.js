@@ -185,16 +185,25 @@ function listen(req, res, parsedUrl) {
 
   // add the listener callback function to the array of listeners
   listeners.push({
-    timeout: new Date(),
+    timestamp: new Date(),
     group: groupKey,
     callback: function (doc, action) {
       var docStr = '{ status : "' + action + '", car: ' + JSON.stringify(doc) + '}';
-
-      // log the update
       debug(docStr);
 
       var jsonCallback = parsedUrl.query.jsoncallback;
       var update = jsonCallback + "(" + docStr + ");";
+      res.writeHead(200, {
+        'Content-Type': 'text/json',
+        'Content-Length': update.length});
+      res.write(update);
+      res.close();
+    },
+    expire: function () {
+      debug("expiring listener");
+      var jsonCallback = parsedUrl.query.jsoncallback;
+      var expireStr = '{status: "expired"}';
+      var update = jsonCallback + "(" + expireStr + ");";
       res.writeHead(200, {
         'Content-Type': 'text/json',
         'Content-Length': update.length});
@@ -207,7 +216,7 @@ function listen(req, res, parsedUrl) {
 function clearExpired() {
   var now = new Date();
   while (listeners.length > 0 && now - listeners[0].timestamp > LISTENER_TIMEOUT) {
-    listeners.shift();
+    listeners.shift().expire();
   }
 }
 
