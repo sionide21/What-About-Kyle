@@ -181,18 +181,23 @@ function deleteCar(req, res, parsedUrl) {
 
 function getCarsForGroup(req, res, parsedUrl) {
 
-  var jsonCallback = parsedUrl.query.jsoncallback;
+  //TODO get cars for a certain date
 
-  //TODO get group from request
-  //var group = parsedUrl.query.group;
-  
+  var jsonCallback = parsedUrl.query.jsoncallback;
+  var groupKey = parsedUrl.query.group;
   var query = couchdb.toQuery({
-    include_docs: true,
-    limit: 1
+    key: groupKey
   });
 
+  var queryUrl = '/cars/_design/search/_view/groupsearch?include_docs=true&key="' + groupKey + '"';
+
+  log("getting cars for group: " + groupKey);
+  log("query: " + queryUrl);
+
   var client = couchdb.createClient();
-  client.request('/cars/_all_docs?include_docs=true', function(er, docs) {
+//  client.request('/cars/_all_docs?include_docs=true', query, function(er, docs) {
+  client.request(queryUrl, function(er, docs) {
+    log('hopefully no errors');
 
 //  db.allDocs(query, function(er, docs) {
     if (er) throw er;
@@ -207,6 +212,7 @@ function getCarsForGroup(req, res, parsedUrl) {
 '{  "date": "March 12, 2010 11:30:00",  "driver": "Alex",  "passengers": ["Nathan", "David"],  "numSeats": 4,  "dest": "Taco Bell",  "location": {   "lat": 11,    "lon": 22  },  "group": "coop"}';*/
     
     var retCarsStr = jsonCallback + "(" + JSON.stringify(retCars) + ");";
+//    var retCarsStr = jsonCallback + "(" + JSON.stringify(docs) + ");";
     log(retCarsStr);
     res.writeHead(200, {
       'Content-Type': 'text/json', 
