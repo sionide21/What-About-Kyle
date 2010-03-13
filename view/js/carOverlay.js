@@ -41,7 +41,7 @@
 				msgBox.prompt(
 					'Are you sure you want to delete this car?', 
 					function() {
-						map.removeOverlay(marker);
+						my.removeCar();
 						updateHandler.deleteCar(my);
 					}
 				);
@@ -121,6 +121,10 @@
 				lng: ll.lng()
 			};
 			return data;
+		}
+		
+		this.removeCar = function() {
+			map.removeOverlay(marker);
 		}
 		
 		this.place = function(m) {
