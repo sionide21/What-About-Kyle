@@ -21,7 +21,7 @@
 <script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/container/container-min.js"></script>
 
 <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAGDdf_nC4iDfqhvjcgc-9GBQoRtT7WMMfqjastn1YMcb_xa202xRqrdfywvew-1OKeWV9C02GyHC0jA" type="text/javascript"></script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
 <script type="text/javascript" src="../view/js/wak.js"></script>
 <script type="text/javascript" src="../view/js/carOverlay.js"></script>
 <script type="text/javascript" src="../view/js/dialogs.js"></script>
@@ -44,8 +44,8 @@
 		initAddDialog(map);
 		
 		$.getJSON(
-			'http://128.61.115.235:8000/getCars',
-			function(data) {
+			'http://128.61.115.235:8000/getCars?jsoncallback=?',
+			function(data, b, c) {
 				var a = new WAKDay(new Date());
 				a.loadCars(data);
 				a.render(map);

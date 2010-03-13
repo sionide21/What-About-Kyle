@@ -1,25 +1,25 @@
 (function() {
 	
 	window.WAKDay = function(date) {
+		my = this;
 		this.cars = [];
 		this.date = date;
 		
 		this.addCar = function(car) {
-			car.setDate(this.date);
-			this.cars.push(car);
+			car.setDate(my.date);
+			my.cars.push(car);
 		}
 		
 		this.render = function(map) {
-			$.each(this.cars, function(car) {
-				car.place(map);
+			$.each(my.cars, function() {
+				this.place(map);
 			});
 		}
 		
 		this.loadCars = function(json) {
-			console.log(json);
-			$.each(json, function(carJson) {
-				var car = wak.loadCar(carJson);
-				this.addCar(car);
+			$.each(json, function() {
+				var car = wak.loadCar(this);
+				my.addCar(car);
 			});
 		}
 	}

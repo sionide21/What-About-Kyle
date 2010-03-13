@@ -74,7 +74,7 @@
 		
 		this.save = function() {
 			var ll = marker.getLatLng();
-			data.pointOnMap = {
+			data.location = {
 				lat: ll.lat(),
 				lng: ll.lng()
 			};

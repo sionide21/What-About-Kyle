@@ -22,13 +22,14 @@ wak = {};
      *    passenger: [],
      *    numSeats: num,
      *    dest: '',
-     *    pointOnMap: {lat: '', lng: ''}
+     *    location: {lat: '', lng: ''}
      * }
 	 */
 	wak.loadCar = function(json) {
-		var point = new GLatLng(json.pointOnMap.lat, json.pointOnMap.lat);
+		var point = new GLatLng(json.location.lat, json.location.lat);
 		var car = new CarOverlay(point);
 		car.load(json);
+		return car;
 	};
 	
 	wak.jsonizeForm = function (form) {
