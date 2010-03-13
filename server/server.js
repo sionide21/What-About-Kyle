@@ -3,7 +3,7 @@ var listeners = [];
 
 var HOST = null;
 var PORT = 8000;
-var DBHOST = "localhost";
+var DBHOST = "128.61.115.235";
 var DBPORT = 5984;
 var DB = 'cars';
 var LISTENER_TIMEOUT = 30 * 1000;
@@ -163,7 +163,7 @@ function getCarsForGroup(parsedUrl, complete) {
     if (er) printError(er);
 
     var retCars = [];
-    for  (var i = 0; i < docs.total_rows; i++) {
+    for  (var i = 0; i < docs.rows.length; i++) {
       retCars.push(docs.rows[i].doc);
     }
     
@@ -171,7 +171,7 @@ function getCarsForGroup(parsedUrl, complete) {
   });
 }
 
-function listen(req, res, parsedUrl) {
+function listen(parsedUrl, complete) {
   //TODO get only on a certain date
   var group = parsedUrl.query.group;
 
@@ -180,27 +180,14 @@ function listen(req, res, parsedUrl) {
     timestamp: new Date(),
     group: group,
     callback: function (doc, action) {
-      var docStr = '{ status : "' + action + '", car: ' + JSON.stringify(doc) + '}';
-      debug(docStr);
-
-      var jsonCallback = parsedUrl.query.jsoncallback;
-      var update = jsonCallback + "(" + docStr + ");";
-      res.writeHead(200, {
-        'Content-Type': 'text/javascript',
-        'Content-Length': update.length});
-      res.write(update);
-      res.close();
+      complete({
+        status: action,
+        car: doc
+      });
     },
     expire: function () {
       debug("expiring listener");
-      var jsonCallback = parsedUrl.query.jsoncallback;
-      var expireStr = '{status: "expired"}';
-      var update = jsonCallback + "(" + expireStr + ");";
-      res.writeHead(200, {
-        'Content-Type': 'text/javascript',
-        'Content-Length': update.length});
-      res.write(update);
-      res.close();
+      complete({status: 'expired'});
     }
   });
 }
