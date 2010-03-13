@@ -94,7 +94,7 @@ function addCar(req, res, parsedUrl) {
 
   // send the newly added car to all listening clients
   for (var i = 0; i < listeners.length; i++) {
-    listeners[i].write(car + "\n");
+    listeners[i].write(car);
     listeners[i].close();
   }
   res.close();
