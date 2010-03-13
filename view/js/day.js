@@ -65,7 +65,7 @@
 				return val.match(json);
 			});
 			if (match[0]) {
-				match[0].load(json);
+				match[0].load(json, true);
 			}
 		}
 	}

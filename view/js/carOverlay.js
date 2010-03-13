@@ -68,6 +68,22 @@
 			updateHandler.saveCar(my, true);
 		}
 		
+		function refreshPassengers() {
+			if (!formPane) { return; }
+			console.log($('UL LI.passenger', formPane).remove());
+			
+			$.each(data.passengers, function() {
+				console.log(this);
+				$('UL LI.input', formPane).before('<li class="passenger">' + this + '</li>');
+			});
+			
+			if (data.passengers && data.passengers.length >= data.numSeats) {
+				$('UL LI.input', formPane).hide();
+			} else {
+				$('UL LI.input', formPane).show();
+			}
+		}
+		
 		function addPassenger(name) {
 			if (data.passengers) {
 				data.passengers.push(name);
@@ -107,6 +123,8 @@
 			data = json;
 			if (!skipRender) {
 				formPane = renderInfo();
+			} else if (formPane) {
+				refreshPassengers();
 			}
 			if (json.location) {
 				var point = new GLatLng(json.location.lat, json.location.lng);
