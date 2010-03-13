@@ -5,6 +5,7 @@ var listeners = [];
 
 var HOST = null;
 var PORT = 8000;
+var DB = 'cars';
 
 // command line arguments
 var argv = process.argv;
@@ -24,7 +25,7 @@ var http = require('http');
 
 var couchdb = require('./lib/couchdb');
 var client = couchdb.createClient(5984, 'localhost');
-var db = client.db('cars');
+var db = client.db(DB);
 
 http.createServer(function (req, res) {
 
@@ -158,13 +159,19 @@ function deleteCar(req, res, parsedUrl) {
   //TODO implement group stuff
 //  var group = parsedUrl.query.group;
 
-  log('removing doc ' + id);
+  log('removing doc: id ' + id + '\nrev ' + rev);
   db.removeDoc(id, rev, function(er, doc) {
-      if (er) throw er;
+      if (er) {
+        for (var field in er) {
+          log(field+': '+er[field]);
+        }
+        throw er;
+      }
       log('inside callback function');
       db.getDoc(doc.id, function(er, doc) {
         log('inside inner callback function');
 
+        var jsonCallback = parsedUrl.query.jsoncallback;
         var action = 'deleteCar';
         var docJson = JSON.stringify(doc);
         var docStr = jsonCallback + "(" + docJson + ");";
