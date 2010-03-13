@@ -3,6 +3,8 @@ var listeners = [];
 
 var HOST = null;
 var PORT = 8000;
+var DBHOST = "localhost";
+var DBPORT = 5984;
 var DB = 'cars';
 var LISTENER_TIMEOUT = 30 * 1000;
 
@@ -23,7 +25,7 @@ var url = require('url');
 var http = require('http');
 
 var couchdb = require('./lib/couchdb');
-var client = couchdb.createClient(5984, 'localhost');
+var client = couchdb.createClient(DBPORT, DBHOST);
 var db = client.db(DB);
 
 http.createServer(function (req, res) {
@@ -147,7 +149,7 @@ function getCarsForGroup(req, res, parsedUrl) {
   var jsonCallback = parsedUrl.query.jsoncallback;
   var group = parsedUrl.query.group;
   var queryUrl = '/cars/_design/search/_view/groupsearch?include_docs=true&key="' + group + '"';
-  var client = couchdb.createClient();
+  var client = couchdb.createClient(DBPORT, DBHOST);
   client.request(queryUrl, function(er, docs) {
     if (er) printError(er);
 
