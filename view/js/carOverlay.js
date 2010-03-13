@@ -26,7 +26,7 @@
 			// Magic additional stuff
 			var pList = '';
 			$(data.passengers).each(function(i, val) {
-				pList += '<li>' + val + '</li>';
+				pList += '<li class="passenger">' + val + '</li>';
 			});
 			html = html.replace(/#{passengerList}/i, pList);
 			
@@ -47,7 +47,25 @@
 				);
 			});
 			
+			$('UL LI.passenger', dom).live('click', function() {
+				removePassenger(this);
+			});
+			
+			if (data.passengers.length >= data.numSeats) {
+				$('UL LI.input', dom).hide();
+			}
 			return dom;
+		}
+		
+		function removePassenger(pass) {
+			var val = $(pass).text();
+			$(pass).remove();
+			data.passengers.splice(data.passengers.lastIndexOf(val), 1);
+			
+			if (data.passengers.length < data.numSeats) {
+				$('UL LI.input', formPane).show();
+			}
+			updateHandler.saveCar(my, true);
 		}
 		
 		function addPassenger(name) {
@@ -56,7 +74,10 @@
 			} else {
 				data.passengers = [name];
 			}
-			$('UL LI.input', formPane).before('<li>' + name + '</li>');
+			$('UL LI.input', formPane).before('<li class="passenger">' + name + '</li>');
+			if (data.passengers.length >= data.numSeats) {
+				$('UL LI.input', formPane).hide();
+			}
 			updateHandler.saveCar(my, true);
 		}
 		
