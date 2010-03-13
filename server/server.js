@@ -1,7 +1,6 @@
 //var fu = require('fu');
 //var qs = require('querystring');
 
-var cars = [];
 var listeners = [];
 
 var HOST = null;
@@ -71,7 +70,6 @@ http.createServer(function (req, res) {
   // does the expected path exist?
   if (paths[path]) {
     log('200: ' + path);
-//    res.writeHead(200, {'Content-Type': 'application/json', "Content-Length": });
     paths[path](req, res, parsedUrl);
   } else {
     log('404: ' + path);
@@ -158,6 +156,7 @@ function deleteCar(req, res, parsedUrl) {
   db.removeDoc(id, rev, function(er, doc) {
     asdf;
   });
+
   log('done removing doc');
   res.close();
   log('called close');
