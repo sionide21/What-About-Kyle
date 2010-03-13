@@ -51,6 +51,7 @@
 		
 		con.loadDay(new Date(), function(day) {
 			wak.currentDay = day;
+			day.listenForUpdates(con);
 			day.render(map);
 		});
 

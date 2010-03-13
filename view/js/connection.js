@@ -7,12 +7,9 @@ function Connection(url, group) {
 
 	this.loadDay = function(date, callback) {
 		var params = {
-			group: group
+			group: group,
+			date: date
 		};
-		
-		if (date) {
-			params.date = date;
-		}
 	
 		$.getJSON(
 			conn('/getCars'),
@@ -43,5 +40,39 @@ function Connection(url, group) {
 		   function(data){
 		   		car.load(data, skipRender);
 		   });
+	};
+	
+	function listen(params, callback) {
+		$.ajax({
+		  url: conn('/listen'),
+		  cache: false,
+		  dataType: 'jsonp',
+		  data: params,
+		  timeout: 30000,
+		  success: callback,
+		  error: function (r, status) {
+		  	console.log(status);
+		  	if (status === 'timeout') {
+		  		listen(params, callback);
+		  	}
+		  }
+		});
+	}
+	
+	this.registerListener = function(date, listenerObject) {
+		var params = {
+			group: group,
+			date: date
+		};
+		
+		var callback = function(data) {
+			if (typeof(listenerObject[data.status]) === 'function') {
+				listenerObject[data.status](data.car);
+		  		listen(params, callback);
+			}
+		}
+		
+		listen(params, callback);
+		
 	};
 };
