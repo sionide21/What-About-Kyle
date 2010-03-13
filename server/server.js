@@ -34,7 +34,6 @@ http.createServer(function (req, res) {
     "/getCars"    : getCarsForGroup,
     "/addCar"     : addCar,
     "/modifyCar"  : addCar,
-    //"/modifyCar"  : modifyCar,
     "/deleteCar"  : deleteCar,
     "/listen"     : listen,
   };
@@ -84,7 +83,7 @@ function addCar(req, res, parsedUrl) {
 
     // add the car to the database
     db.saveDoc(carObj, function(er, doc) {
-      if (er) throw er;
+      if (er) printError(er);
       db.getDoc(doc.id, function(er, doc) {
 
         var action = parsedUrl.pathname.substr(1);
@@ -122,26 +121,21 @@ function deleteCar(req, res, parsedUrl) {
 
   debug('removing doc: id ' + id + '\nrev ' + rev);
   db.removeDoc(id, rev, function(er, doc) {
-      if (er) {
-        for (var field in er) {
-          debug(field+': '+er[field]);
-        }
-        throw er;
-      }
+    if (er) printError(er);
 
-      var jsonCallback = parsedUrl.query.jsoncallback;
-      var action = 'deleteCar';
-      var docStr = jsonCallback + "(" + JSON.stringify(carObj) + ");";
-      debug(docStr);
+    var jsonCallback = parsedUrl.query.jsoncallback;
+    var action = 'deleteCar';
+    var docStr = jsonCallback + "(" + JSON.stringify(carObj) + ");";
+    debug(docStr);
 
-      res.writeHead(200, {
-        'Content-Type': 'text/javascript',
-        'Content-Length': docStr.length});
-      res.write(docStr);
-      res.close();
+    res.writeHead(200, {
+      'Content-Type': 'text/javascript',
+      'Content-Length': docStr.length});
+    res.write(docStr);
+    res.close();
 
-      // notify all listening clients
-      updateListeners(carObj, action, group);
+    // notify all listening clients
+    updateListeners(carObj, action, group);
   });
 }
 
@@ -149,12 +143,13 @@ function getCarsForGroup(req, res, parsedUrl) {
 
   //TODO get cars for a certain date
 
+  var day = new Date(parsedUrl.query.date);
   var jsonCallback = parsedUrl.query.jsoncallback;
   var group = parsedUrl.query.group;
   var queryUrl = '/cars/_design/search/_view/groupsearch?include_docs=true&key="' + group + '"';
   var client = couchdb.createClient();
   client.request(queryUrl, function(er, docs) {
-    if (er) throw er;
+    if (er) printError(er);
 
     var retCars = [];
     for  (var i = 0; i < docs.total_rows; i++) {
@@ -221,5 +216,12 @@ function updateListeners(doc, action, group) {
       listeners[i].callback(doc, action);
     }
   }
+}
+
+function printError(er) {
+  for (var field in er) {
+    log(field + ": " + er[field]);
+  }
+  throw er;
 }
 
