@@ -70,10 +70,9 @@
 		
 		function refreshPassengers() {
 			if (!formPane) { return; }
-			console.log($('UL LI.passenger', formPane).remove());
+			$('UL LI.passenger', formPane).remove();
 			
 			$.each(data.passengers, function() {
-				console.log(this);
 				$('UL LI.input', formPane).before('<li class="passenger">' + this + '</li>');
 			});
 			
