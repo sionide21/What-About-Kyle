@@ -116,7 +116,6 @@ function addCar(req, res, parsedUrl) {
       db.getDoc(doc.id, function(er, doc) {
 
         var action = parsedUrl.pathname.substr(1);
-
         var docJson = JSON.stringify(doc);
         var docStr = jsonCallback + "(" + docJson + ");";
 
@@ -158,7 +157,21 @@ function deleteCar(req, res, parsedUrl) {
 
   log('removing doc ' + id);
   db.removeDoc(id, rev, function(er, doc) {
-    asdf;
+    if (er) throw er;
+
+    var docJson = JSON.stringify(doc);
+    var docStr = jsonCallback + "(" + docJson + ");";
+
+    res.writeHead(200, {
+      'Content-Type': 'text/json',
+      'Content-Length': docStr.length});
+    res.write(docStr);
+    res.close();
+
+    // notify the listeners of the delete
+    for (var i = 0; i < listeners.length; i++) {
+      listeners[i](doc, "deleteCar");
+    }
   });
 
   log('done removing doc');
@@ -208,10 +221,11 @@ function listen(req, res, parsedUrl) {
   //TODO get groupKey from request
   //var group = parsedUrl.query.group;
 
-  // add the listenerr to the array of listeners
+  // add the listener callback function to the array of listeners
   listeners.push(function (doc, action) {
     var docStr = '{ status : "' + action + '", car: ' + JSON.stringify(doc) + '}';
 
+    // log the update
     log(docStr);
 
     var jsonCallback = parsedUrl.query.jsoncallback;
