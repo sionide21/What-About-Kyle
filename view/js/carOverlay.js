@@ -13,8 +13,7 @@
 				icon: carIcon
 			});
 			GEvent.addListener(marker, "click", showInfoWindow);
-			GEvent.addListener(marker, "infowindowclose", saveInfo);
-			
+			GEvent.addListener(marker, "infowindowclose", saveInfo);			
 		}
 		
 		function renderInfo() {
@@ -74,7 +73,7 @@
 		
 		this.save = function() {
 			var ll = marker.getLatLng();
-			data.pointOnMap = {
+			data.location = {
 				lat: ll.lat(),
 				lng: ll.lng()
 			};
@@ -88,6 +87,7 @@
 		
 		this.setDate = function(date) {
 			data.date = date.toUTCString();
+			console.log(data);
 		}
 		
 		init();

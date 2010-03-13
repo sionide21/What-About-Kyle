@@ -2,6 +2,8 @@ wak = {};
 (function() {
 	var geocoder = new GClientGeocoder();
 
+
+	wak.currentDay = new Date();
 	wak.centerMap = function(map, loc, onError) {
 	    var updateMap = function(point) {
 	   		if (!point) {
@@ -22,13 +24,14 @@ wak = {};
      *    passenger: [],
      *    numSeats: num,
      *    dest: '',
-     *    pointOnMap: {lat: '', lng: ''}
+     *    location: {lat: '', lng: ''}
      * }
 	 */
 	wak.loadCar = function(json) {
-		var point = new GLatLng(json.pointOnMap.lat, json.pointOnMap.lat);
+		var point = new GLatLng(json.location.lat, json.location.lng);
 		var car = new CarOverlay(point);
 		car.load(json);
+		return car;
 	};
 	
 	wak.jsonizeForm = function (form) {
