@@ -222,6 +222,8 @@ function printError(er) {
   for (var field in er) {
     log(field + ": " + er[field]);
   }
-  throw er;
+
+  // uncommenting the next line will cause the server to halt on error
+//  throw er;
 }
 
