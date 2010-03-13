@@ -62,7 +62,7 @@ http.createServer(function (req, res) {
   // does the expected path exist?
   if (paths[path]) {
     log('200: ' + path);
-    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.writeHead(200, {'Content-Type': 'application/json'});
     paths[path](req, res, parsedUrl);
   } else {
     log('404: ' + path);
@@ -135,7 +135,7 @@ function getCarsForGroup(req, res, parsedUrl) {
     limit: 1
   });
 
-  log(query);
+  //log(query);
 
   var client = couchdb.createClient();
   client.request('/cars/_all_docs?include_docs=true', function(er, docs) {
@@ -147,6 +147,8 @@ function getCarsForGroup(req, res, parsedUrl) {
     for  (var i = 0; i < docs.total_rows; i++) {
       retCars.push(docs.rows[i].doc);
     }
+    
+    log(JSON.stringify(retCars));
     res.write(JSON.stringify(retCars));
     res.close();
   });
