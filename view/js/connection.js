@@ -42,16 +42,22 @@ function Connection(url, group) {
 		   });
 	};
 	
+	this.deleteCar = function(car) {
+		var params = car.save();
+		params.group = group;
+		$.getJSON(conn('/deleteCar'), 
+			{car: JSON.stringify(params)},
+		   $.noop);
+	};
+	
 	function listen(params, callback) {
 		$.ajax({
 		  url: conn('/listen'),
 		  cache: false,
 		  dataType: 'jsonp',
 		  data: params,
-		  timeout: 30000,
 		  success: callback,
 		  error: function (r, status) {
-		  	console.log(status);
 		  	if (status === 'timeout') {
 		  		listen(params, callback);
 		  	}

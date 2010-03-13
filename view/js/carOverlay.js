@@ -42,6 +42,7 @@
 					'Are you sure you want to delete this car?', 
 					function() {
 						map.removeOverlay(marker);
+						updateHandler.deleteCar(my);
 					}
 				);
 			});
