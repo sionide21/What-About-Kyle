@@ -50,7 +50,17 @@ http.createServer(function (req, res) {
   // does the expected path exist?
   if (paths[path]) {
     log('200: ' + path);
-    paths[path](req, res, parsedUrl);
+    paths[path](parsedUrl, function(outJSON) {
+        var jsonCallback = parsedUrl.query.jsoncallback;
+        outStr = JSON.stringify(outJSON);
+        outStr = jsonCallback + "(" + outStr + ");"
+        res.writeHead(200, {
+          'Content-Type': 'text/javascript',
+          'Content-Length': outStr.length
+        });
+        res.write(outStr);
+        res.close();
+    });
   } else {
     log('404: ' + path);
     res.writeHead(404, {'Content-Type': 'text/plain'});
@@ -72,7 +82,7 @@ function log(output) {
   sys.puts(output);
 }
 
-function addCar(req, res, parsedUrl) {
+function addCar(req, res, parsedUrl, responde) {
   if (parsedUrl.query && parsedUrl.query.car) {
     var car = parsedUrl.query.car;
     var carObj = JSON.parse(car);
@@ -139,12 +149,11 @@ function deleteCar(req, res, parsedUrl) {
   });
 }
 
-function getCarsForGroup(req, res, parsedUrl) {
+function getCarsForGroup(parsedUrl, complete) {
 
   //TODO get cars for a certain date
 
   var day = new Date(parsedUrl.query.date);
-  var jsonCallback = parsedUrl.query.jsoncallback;
   var group = parsedUrl.query.group;
   var queryUrl = '/cars/_design/search/_view/groupsearch?include_docs=true&key="' + group + '"';
   var client = couchdb.createClient();
@@ -156,13 +165,7 @@ function getCarsForGroup(req, res, parsedUrl) {
       retCars.push(docs.rows[i].doc);
     }
     
-    var retCarsStr = jsonCallback + "(" + JSON.stringify(retCars) + ");";
-    debug(retCarsStr);
-    res.writeHead(200, {
-      'Content-Type': 'text/javascript', 
-      'Content-Length': retCarsStr.length});
-    res.write(retCarsStr);
-    res.close();
+    complete(retCars);
   });
 }
 
