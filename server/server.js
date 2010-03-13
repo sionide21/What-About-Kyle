@@ -1,5 +1,3 @@
-//var fu = require('fu');
-//var qs = require('querystring');
 
 var listeners = [];
 
@@ -79,7 +77,8 @@ function addCar(req, res, parsedUrl) {
   if (parsedUrl.query && parsedUrl.query.car) {
     var car = parsedUrl.query.car;
     var carObj = JSON.parse(car);
-    var groupKey = parsedUrl.query.group;
+    var group = carObj.group;
+    debug("adding car to group: " + group);
     var jsonCallback = parsedUrl.query.jsoncallback;
     debug('adding car: ' + carObj);
 
@@ -101,7 +100,7 @@ function addCar(req, res, parsedUrl) {
 
         // notify all listening clients
         debug("pushing " + action + " updates to " + listeners.length + " listeners.");
-        updateListeners(doc, action, groupKey);
+        updateListeners(doc, action, group);
       });
     });
 
@@ -112,14 +111,14 @@ function addCar(req, res, parsedUrl) {
 }
 
 function deleteCar(req, res, parsedUrl) {
-  var groupKey = parsedUrl.query.group;
   var car = parsedUrl.query.car;
+  var carObj = JSON.parse(car);
   debug('about to delete');
   debug(car);
 
-  var carObj = JSON.parse(car);
   var id = carObj._id;
   var rev = carObj._rev;
+  var group = carObj.group;
 
   debug('removing doc: id ' + id + '\nrev ' + rev);
   db.removeDoc(id, rev, function(er, doc) {
@@ -148,7 +147,7 @@ function deleteCar(req, res, parsedUrl) {
 
 
         // notify all listening clients
-        updateListeners(doc, action, groupKey);
+        updateListeners(doc, action, group);
       });
   });
 }
@@ -158,8 +157,8 @@ function getCarsForGroup(req, res, parsedUrl) {
   //TODO get cars for a certain date
 
   var jsonCallback = parsedUrl.query.jsoncallback;
-  var groupKey = parsedUrl.query.group;
-  var queryUrl = '/cars/_design/search/_view/groupsearch?include_docs=true&key="' + groupKey + '"';
+  var group = parsedUrl.query.group;
+  var queryUrl = '/cars/_design/search/_view/groupsearch?include_docs=true&key="' + group + '"';
   var client = couchdb.createClient();
   client.request(queryUrl, function(er, docs) {
     if (er) throw er;
@@ -181,12 +180,12 @@ function getCarsForGroup(req, res, parsedUrl) {
 
 function listen(req, res, parsedUrl) {
   //TODO get only on a certain date
-  var groupKey = parsedUrl.query.group;
+  var group = parsedUrl.query.group;
 
   // add the listener callback function to the array of listeners
   listeners.push({
     timestamp: new Date(),
-    group: groupKey,
+    group: group,
     callback: function (doc, action) {
       var docStr = '{ status : "' + action + '", car: ' + JSON.stringify(doc) + '}';
       debug(docStr);
@@ -220,10 +219,12 @@ function clearExpired() {
   }
 }
 
-function updateListeners(doc, action, groupKey) {
+function updateListeners(doc, action, group) {
+  debug("group: " + group);
   for (var i = 0; i < listeners.length; i++) {
     // check if the listener is in the right group
-    if (listeners[i].group === groupKey) {
+    debug("listener's group: " + listeners[i].group);
+    if (listeners[i].group === group) {
       listeners[i].callback(doc, action);
     }
   }
