@@ -49,13 +49,20 @@
 		// Allows stuff to talk to the server
 		window.updateHandler = con;
 		
-		con.loadDay(new Date(), function(day) {
-			//day = new WAKDay(new Date());
-			wak.currentDay = day;
-			//day.listenForUpdates(con);
-			day.render(map);
+		// Force preload <-- A HACK
+		var hack = new GMarker(map.getCenter());
+		map.addOverlay(hack);
+		hack.openInfoWindowHtml('Loading...');
+		GEvent.addListener(hack, "infowindowopen", function() {			
+			map.removeOverlay(hack);
+		
+			con.loadDay(new Date(), function(day) {
+				//day = new WAKDay(new Date());
+				wak.currentDay = day;
+				day.listenForUpdates(con);
+				day.render(map);
+			});
 		});
-
 	});
 </script>
 <div id="doc2" class="yui-t7">

@@ -51,18 +51,14 @@ function Connection(url, group) {
 	};
 	
 	function listen(params, callback) {
-		$.ajax({
-		  url: conn('/listen'),
-		  cache: false,
-		  dataType: 'jsonp',
-		  data: params,
-		  success: callback,
-		  error: function (r, status) {
-		  	if (status === 'timeout') {
-		  		listen(params, callback);
-		  	}
-		  }
-		});
+		$.getJSON(conn('/listen'), params, 
+			function(data) {
+				if (data.status !== 'expired') {
+					callback(arguments);
+				}
+				listen(params, callback);
+			}
+		);
 	}
 	
 	this.registerListener = function(date, listenerObject) {
@@ -74,11 +70,9 @@ function Connection(url, group) {
 		var callback = function(data) {
 			if (typeof(listenerObject[data.status]) === 'function') {
 				listenerObject[data.status](data.car);
-		  		listen(params, callback);
 			}
 		}
 		
 		listen(params, callback);
-		
 	};
 };
