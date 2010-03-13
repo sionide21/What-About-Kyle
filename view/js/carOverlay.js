@@ -99,10 +99,18 @@
 			updateHandler.saveCar(my, true);
 		}	
 		
+		this.match = function(otherData) {
+			return data._id === otherData._id;
+		}
+		
 		this.load = function(json, skipRender) {
 			data = json;
 			if (!skipRender) {
 				formPane = renderInfo();
+			}
+			if (json.location) {
+				var point = new GLatLng(json.location.lat, json.location.lng);
+				marker.setLatLng(point);
 			}
 		}
 		
