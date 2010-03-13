@@ -63,14 +63,17 @@ http.createServer(function (req, res) {
 }).listen(PORT);
 sys.puts('here we go again! (on port ' + PORT + ')')
 
-
-// this just outputs something to the console
-function log(output) {
+// this only outputs to the console if DEBUG flag is set
+function debug(output) {
   if (DEBUG) {
-    sys.puts(output);
+    log(output);
   }
 }
 
+// this just outputs something to the console
+function log(output) {
+  sys.puts(output);
+}
 
 function addCar(req, res, parsedUrl) {
   if (parsedUrl.query && parsedUrl.query.car) {
@@ -78,7 +81,7 @@ function addCar(req, res, parsedUrl) {
     var carObj = JSON.parse(car);
     var groupKey = parsedUrl.query.group;
     var jsonCallback = parsedUrl.query.jsoncallback;
-    log('adding car: ' + carObj);
+    debug('adding car: ' + carObj);
 
     // add the car to the database
     db.saveDoc(carObj, function(er, doc) {
@@ -97,15 +100,8 @@ function addCar(req, res, parsedUrl) {
         res.close();
 
         // notify all listening clients
-        log("pushing " + action + " updates to " + listeners.length + " listeners.");
-
+        debug("pushing " + action + " updates to " + listeners.length + " listeners.");
         updateListeners(doc, action, groupKey);
-//        for (var i = 0; i < listeners.length; i++) {
-//          // check if the listener is in the right group
-//          if (listeners[i].group === groupKey) {
-//            listeners[i].callback(doc, action);
-//          }
-//        }
       });
     });
 
@@ -118,24 +114,26 @@ function addCar(req, res, parsedUrl) {
 function deleteCar(req, res, parsedUrl) {
   var groupKey = parsedUrl.query.group;
   var car = parsedUrl.query.car;
-  log('about to delete');
-  log(car);
+  debug('about to delete');
+  debug(car);
 
   var carObj = JSON.parse(car);
   var id = carObj._id;
   var rev = carObj._rev;
 
-  log('removing doc: id ' + id + '\nrev ' + rev);
+  debug('removing doc: id ' + id + '\nrev ' + rev);
   db.removeDoc(id, rev, function(er, doc) {
       if (er) {
         for (var field in er) {
-          log(field+': '+er[field]);
+          debug(field+': '+er[field]);
         }
         throw er;
       }
-      log('inside callback function');
+      debug('inside callback function');
+
+      // get the modified car to return to the clients
       db.getDoc(doc.id, function(er, doc) {
-        log('inside inner callback function');
+        debug('inside inner callback function');
 
         var jsonCallback = parsedUrl.query.jsoncallback;
         var action = 'deleteCar';
@@ -148,33 +146,10 @@ function deleteCar(req, res, parsedUrl) {
         res.write(docStr);
         res.close();
 
+
+        // notify all listening clients
         updateListeners(doc, action, groupKey);
-//        // notify all listening clients
-//        log("pushing " + action + " updates to " + listeners.length + " listeners.");
-//        // notify the listeners of the delete
-//        for (var i = 0; i < listeners.length; i++) {
-//          listeners[i](doc, "deleteCar");
-//        }
       });
-
-/*
-    if (er) throw er;
-    log('inside callback function');
-
-    var docJson = JSON.stringify(doc);
-    var docStr = jsonCallback + "(" + docJson + ");";
-
-    res.writeHead(200, {
-      'Content-Type': 'text/json',
-      'Content-Length': docStr.length});
-    res.write(docStr);
-    res.close();
-
-    // notify the listeners of the delete
-    for (var i = 0; i < listeners.length; i++) {
-      listeners[i](doc, "deleteCar");
-    }
-    */
   });
 }
 
@@ -184,21 +159,9 @@ function getCarsForGroup(req, res, parsedUrl) {
 
   var jsonCallback = parsedUrl.query.jsoncallback;
   var groupKey = parsedUrl.query.group;
-  var query = couchdb.toQuery({
-    key: groupKey
-  });
-
   var queryUrl = '/cars/_design/search/_view/groupsearch?include_docs=true&key="' + groupKey + '"';
-
-  log("getting cars for group: " + groupKey);
-  log("query: " + queryUrl);
-
   var client = couchdb.createClient();
-//  client.request('/cars/_all_docs?include_docs=true', query, function(er, docs) {
   client.request(queryUrl, function(er, docs) {
-    log('hopefully no errors');
-
-//  db.allDocs(query, function(er, docs) {
     if (er) throw er;
 
     var retCars = [];
@@ -206,13 +169,8 @@ function getCarsForGroup(req, res, parsedUrl) {
       retCars.push(docs.rows[i].doc);
     }
     
-
-/*    var retCarsStr = 
-'{  "date": "March 12, 2010 11:30:00",  "driver": "Alex",  "passengers": ["Nathan", "David"],  "numSeats": 4,  "dest": "Taco Bell",  "location": {   "lat": 11,    "lon": 22  },  "group": "coop"}';*/
-    
     var retCarsStr = jsonCallback + "(" + JSON.stringify(retCars) + ");";
-//    var retCarsStr = jsonCallback + "(" + JSON.stringify(docs) + ");";
-    log(retCarsStr);
+    debug(retCarsStr);
     res.writeHead(200, {
       'Content-Type': 'text/json', 
       'Content-Length': retCarsStr.length});
@@ -233,7 +191,7 @@ function listen(req, res, parsedUrl) {
       var docStr = '{ status : "' + action + '", car: ' + JSON.stringify(doc) + '}';
 
       // log the update
-      log(docStr);
+      debug(docStr);
 
       var jsonCallback = parsedUrl.query.jsoncallback;
       var update = jsonCallback + "(" + docStr + ");";
@@ -244,9 +202,6 @@ function listen(req, res, parsedUrl) {
       res.close();
     }
   });
-
-  // not calling res.close() here so that connection stays open.
-  // this way, the client will get updates as soon as it occurs.
 }
 
 function clearExpired() {
