@@ -2,6 +2,7 @@
 	var carIcon = new GIcon(G_DEFAULT_ICON);
 	carIcon.image = "http://github.com/sionide21/What-About-Kyle/raw/master/view/icons/car.png";
 	 window.CarOverlay = function(point) {
+		var my = this;
 		var marker;
 		var data = {};
 		var map;
@@ -13,7 +14,8 @@
 				icon: carIcon
 			});
 			GEvent.addListener(marker, "click", showInfoWindow);
-			GEvent.addListener(marker, "infowindowclose", saveInfo);			
+			GEvent.addListener(marker, "infowindowclose", saveInfo);
+			GEvent.addListener(marker, "dragend", updatePosition);			
 		}
 		
 		function renderInfo() {
@@ -54,6 +56,7 @@
 				data.passengers = [name];
 			}
 			$('UL LI.input', formPane).before('<li>' + name + '</li>');
+			updateHandler.saveCar(my, true);
 		}
 		
 		function showInfoWindow() {
@@ -66,9 +69,19 @@
 		function saveInfo() {
 		}	
 		
-		this.load = function(json) {
+		function updatePosition(ll) {
+			data.location = {
+				lat: ll.lat(),
+				lng: ll.lng()
+			};
+			updateHandler.saveCar(my, true);
+		}	
+		
+		this.load = function(json, skipRender) {
 			data = json;
-			formPane = renderInfo();
+			if (!skipRender) {
+				formPane = renderInfo();
+			}
 		}
 		
 		this.save = function() {
