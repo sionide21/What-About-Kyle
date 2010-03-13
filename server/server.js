@@ -148,16 +148,44 @@ function modifyCar() {
 
 function deleteCar(req, res, parsedUrl) {
   var car = parsedUrl.query.car;
+  log('about to delete');
+  log(car);
+
   var carObj = JSON.parse(car);
-  var id = carObj.id;
-  var rev = carObj.rev;
+  var id = carObj._id;
+  var rev = carObj._rev;
 
   //TODO implement group stuff
 //  var group = parsedUrl.query.group;
 
   log('removing doc ' + id);
   db.removeDoc(id, rev, function(er, doc) {
+      if (er) throw er;
+      log('inside callback function');
+      db.getDoc(doc.id, function(er, doc) {
+        log('inside inner callback function');
+
+        var action = 'deleteCar';
+        var docJson = JSON.stringify(doc);
+        var docStr = jsonCallback + "(" + docJson + ");";
+
+        res.writeHead(200, {
+          'Content-Type': 'text/json',
+          'Content-Length': docStr.length});
+        res.write(docStr);
+        res.close();
+
+        // notify all listening clients
+        log("pushing " + action + " updates to " + listeners.length + " listeners.");
+        // notify the listeners of the delete
+        for (var i = 0; i < listeners.length; i++) {
+          listeners[i](doc, "deleteCar");
+        }
+      });
+
+/*
     if (er) throw er;
+    log('inside callback function');
 
     var docJson = JSON.stringify(doc);
     var docStr = jsonCallback + "(" + docJson + ");";
@@ -172,11 +200,8 @@ function deleteCar(req, res, parsedUrl) {
     for (var i = 0; i < listeners.length; i++) {
       listeners[i](doc, "deleteCar");
     }
+    */
   });
-
-  log('done removing doc');
-  res.close();
-  log('called close');
 }
 
 function getCarsForGroup(req, res, parsedUrl) {
