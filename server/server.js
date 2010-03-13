@@ -93,7 +93,7 @@ function addCar(req, res, parsedUrl) {
 
         // return the newly added car to the client that uploaded it
         res.writeHead(200, {
-          'Content-Type': 'text/json',
+          'Content-Type': 'text/javascript',
           'Content-Length': docStr.length});
         res.write(docStr);
         res.close();
@@ -128,27 +128,20 @@ function deleteCar(req, res, parsedUrl) {
         }
         throw er;
       }
-      debug('inside callback function');
 
-      // get the modified car to return to the clients
-      db.getDoc(doc.id, function(er, doc) {
-        debug('inside inner callback function');
+      var jsonCallback = parsedUrl.query.jsoncallback;
+      var action = 'deleteCar';
+      var docStr = jsonCallback + "(" + JSON.stringify(carObj) + ");";
+      debug(docStr);
 
-        var jsonCallback = parsedUrl.query.jsoncallback;
-        var action = 'deleteCar';
-        var docJson = JSON.stringify(doc);
-        var docStr = jsonCallback + "(" + docJson + ");";
+      res.writeHead(200, {
+        'Content-Type': 'text/javascript',
+        'Content-Length': docStr.length});
+      res.write(docStr);
+      res.close();
 
-        res.writeHead(200, {
-          'Content-Type': 'text/json',
-          'Content-Length': docStr.length});
-        res.write(docStr);
-        res.close();
-
-
-        // notify all listening clients
-        updateListeners(doc, action, group);
-      });
+      // notify all listening clients
+      updateListeners(carObj, action, group);
   });
 }
 
@@ -171,7 +164,7 @@ function getCarsForGroup(req, res, parsedUrl) {
     var retCarsStr = jsonCallback + "(" + JSON.stringify(retCars) + ");";
     debug(retCarsStr);
     res.writeHead(200, {
-      'Content-Type': 'text/json', 
+      'Content-Type': 'text/javascript', 
       'Content-Length': retCarsStr.length});
     res.write(retCarsStr);
     res.close();
@@ -193,7 +186,7 @@ function listen(req, res, parsedUrl) {
       var jsonCallback = parsedUrl.query.jsoncallback;
       var update = jsonCallback + "(" + docStr + ");";
       res.writeHead(200, {
-        'Content-Type': 'text/json',
+        'Content-Type': 'text/javascript',
         'Content-Length': update.length});
       res.write(update);
       res.close();
@@ -204,7 +197,7 @@ function listen(req, res, parsedUrl) {
       var expireStr = '{status: "expired"}';
       var update = jsonCallback + "(" + expireStr + ");";
       res.writeHead(200, {
-        'Content-Type': 'text/json',
+        'Content-Type': 'text/javascript',
         'Content-Length': update.length});
       res.write(update);
       res.close();
