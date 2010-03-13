@@ -84,17 +84,36 @@ function log(output) {
 
 function addCar(req, res, parsedUrl) {
 
-  var car = parsedUrl.query.car;
+// this is the form of a jsonobject representing a car the client should send
+//{
+//  "date": "March 12, 2010 11:30:00",
+//  "driver": "Alex",
+//  "passengers": ["Nathan", "David"],
+//  "numSeats": 4,
+//  "dest": "Taco Bell",
+//  "location": {
+//    "lat": 11,
+//    "lon": 22
+//  },
+//  "group": "coop"
+//}
+
+//  var car = parsedUrl.query.car;
+    //JSON.stringify(docs.rows)
+  var car = {
+    driver: parsedUrl.query.car
+  };
+  db.saveDoc(car);
   
   log("adding car: " + car);
 
-  // add the car to the storage
+  // add the car to the database
   //TODO add car to database here instead of array
-  cars.push(car);
+  //cars.push(car);
 
-  // send the newly added car to all listening clients
+  // notify all listening clients
   for (var i = 0; i < listeners.length; i++) {
-    listeners[i].write(car);
+    listeners[i].write(JSON.stringify(car));
     listeners[i].close();
   }
   res.close();
@@ -107,18 +126,37 @@ function deleteCar() {
 }
 
 function getCarsForGroup(req, res, parsedUrl) {
-  var groupKey;
-  //TODO get groupKey from request
-  listeners.push(res);
-  for (var i = 0; i < cars.length; i++) {
-    res.write(cars[i] + "\n");
-  }
-  res.close();
+
+  //TODO get group from request
+  //var group = parsedUrl.query.group;
+  
+  var query = couchdb.toQuery({
+    include_docs: true,
+    limit: 1
+  });
+
+  log(query);
+
+  var client = couchdb.createClient();
+  client.request('/cars/_all_docs?include_docs=true', function(er, docs) {
+
+//  db.allDocs(query, function(er, docs) {
+    if (er) throw er;
+
+    var retCars = [];
+    for  (var i = 0; i < docs.total_rows; i++) {
+      retCars.push(docs.rows[i].doc);
+    }
+    res.write(JSON.stringify(retCars));
+    res.close();
+  });
 }
 
 function listen(req, res, parsedUrl) {
   //TODO get groupKey from request
-  // simply adds the request to the array of listeners
+  //var group = parsedUrl.query.group;
+
+  // add the request to the array of listeners
   listeners.push(res);
 
   // not calling res.close() here so that connection stays open.
