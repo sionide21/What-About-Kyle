@@ -114,22 +114,25 @@ function addCar(req, res, parsedUrl) {
     db.saveDoc(carObj, function(er, doc) {
       if (er) throw er;
       db.getDoc(doc.id, function(er, doc) {
-        var docStr = jsonCallback + "(" + JSON.stringify(doc) + ");";
 
-        // return the newly added car to the client that uploaded it
+        var action = parsedUrl.pathname.substr(1);
+        var docJson = JSON.stringify(doc);
+        var docStr = jsonCallback + "(" + docJson + ");";
+
         res.writeHead(200, {
-          'Content-Type': 'text/plain',
+          'Content-Type': 'text/json',
           'Content-Length': docStr.length});
         res.write(docStr);
         res.close();
 
         // notify all listening clients
+        log("pushing " + action + " updates to " + listeners.length + " listeners.");
+
+        // return the newly added car to the client that uploaded it
+
         for (var i = 0; i < listeners.length; i++) {
-          listeners[i].writeHead(200, {
-            'Content-Type': 'text/plain',
-            'Content-Length': docStr.length});
-          listeners[i].write(docStr);
-          listeners[i].close();
+          listeners[i](doc, action);
+  //var jsonCallback = parsedUrl.query.jsoncallback;
         }
       });
     });
@@ -154,7 +157,21 @@ function deleteCar(req, res, parsedUrl) {
 
   log('removing doc ' + id);
   db.removeDoc(id, rev, function(er, doc) {
-    asdf;
+    if (er) throw er;
+
+    var docJson = JSON.stringify(doc);
+    var docStr = jsonCallback + "(" + docJson + ");";
+
+    res.writeHead(200, {
+      'Content-Type': 'text/json',
+      'Content-Length': docStr.length});
+    res.write(docStr);
+    res.close();
+
+    // notify the listeners of the delete
+    for (var i = 0; i < listeners.length; i++) {
+      listeners[i](doc, "deleteCar");
+    }
   });
 
   log('done removing doc');
@@ -200,11 +217,25 @@ function getCarsForGroup(req, res, parsedUrl) {
 }
 
 function listen(req, res, parsedUrl) {
+  //TODO get only on a certain date
   //TODO get groupKey from request
   //var group = parsedUrl.query.group;
 
-  // add the request to the array of listeners
-  listeners.push(res);
+  // add the listener callback function to the array of listeners
+  listeners.push(function (doc, action) {
+    var docStr = '{ status : "' + action + '", car: ' + JSON.stringify(doc) + '}';
+
+    // log the update
+    log(docStr);
+
+    var jsonCallback = parsedUrl.query.jsoncallback;
+    var update = jsonCallback + "(" + docStr + ");";
+      res.writeHead(200, {
+        'Content-Type': 'text/json',
+        'Content-Length': update.length});
+      res.write(update);
+      res.close();
+  });
 
   // not calling res.close() here so that connection stays open.
   // this way, the client will get updates as soon as it occurs.
