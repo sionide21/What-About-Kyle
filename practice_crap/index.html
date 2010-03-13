@@ -45,7 +45,11 @@
 	});
 </script>
 <div id="doc2" class="yui-t7">
-   <div id="hd"><h1>Header</h1></div>
+   <div id="hd"><h1>Header</h1>
+   	<div class="messageHolder">
+   		<div id="messageArea" style="display:none"></div>
+   	</div>
+   </div>
    <div id="bd" role="main">
 	<div role="navigation" class="yui-g">
 		<form id="locationBox" action="#">
@@ -65,6 +69,7 @@
 <!-- Hidden Stuff For Dialogs and Junk -->
 <div id="carInfo" style="display:none">
 	<h2 style="margin-top: 0px">#{driver}'s Car</h2>
+	<h3>#{dest}</h3>
 	Total Seats: #{numSeats}<br/>
 	Passengers:
 	<ul>
@@ -74,19 +79,21 @@
 				<input type="text" class="addPassengerBox" />
 			</form>
 		</li>
-	</ul>
+	</ul>	
+	<a class="deleteButton" href="#">Remove Car</a>
 </div>
 
 <div id="addDialog" class="yui-pe-content">
 	<div class="hd">Add Car</div>
 	<div class="bd">
 		<form action="#" id="addCarForm">
-				<label for="driver">Driver:</label><input type="text" name="driver"/><br/>
-				<label for="numSeats"># Passengers:</label><input type="text" name="numSeats"/><br/>
-				<label for="dest">Destination:</label><input type="text" name="dest"/><br/>
-			</form>
+			<label for="driver">Driver:</label><input type="text" name="driver"/><br/>
+			<label for="numSeats"># Passengers:</label><input type="text" name="numSeats"/><br/>
+			<label for="dest">Destination:</label><input type="text" name="dest"/><br/>
+		</form>
 	</div>
 </div>
+<div id="promptDialog"></div>
 
 </body>
 </html>
