@@ -2,6 +2,8 @@ wak = {};
 (function() {
 	var geocoder = new GClientGeocoder();
 
+
+	wak.currentDay = new Date();
 	wak.centerMap = function(map, loc, onError) {
 	    var updateMap = function(point) {
 	   		if (!point) {

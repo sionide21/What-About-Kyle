@@ -44,9 +44,13 @@
 		
 		initAddDialog(map);
 		
-		var con = new Connection('http://128.61.115.235:8000/getCars', 'VyperBoli');
+		var con = new Connection('http://128.61.115.235:8000', 'VyperBoli');
+		
+		// Allows stuff to talk to the server
+		window.updateHandler = con;
 		
 		con.loadDay(new Date(), function(day) {
+			wak.currentDay = day;
 			day.render(map);
 		});
 

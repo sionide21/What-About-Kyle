@@ -19,10 +19,12 @@ function initAddDialog(map) {
 		var listener = GEvent.addListener(map, "click", function(overlay, point) {
 			if (!overlay) {
 				var car = new CarOverlay(point);
-				car.place(map);
 				car.load(wak.jsonizeForm($('FORM#addCarForm')));
+				wak.currentDay.addCar(car);
+				car.place(map);
 				GEvent.removeListener(listener);
 				msgBox.clear();
+				updateHandler.addCar(car);
 			}
 		});
 		msgBox.show('Click on the map to place your new car.');

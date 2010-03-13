@@ -13,8 +13,7 @@
 				icon: carIcon
 			});
 			GEvent.addListener(marker, "click", showInfoWindow);
-			GEvent.addListener(marker, "infowindowclose", saveInfo);
-			
+			GEvent.addListener(marker, "infowindowclose", saveInfo);			
 		}
 		
 		function renderInfo() {
@@ -88,6 +87,7 @@
 		
 		this.setDate = function(date) {
 			data.date = date.toUTCString();
+			console.log(data);
 		}
 		
 		init();
