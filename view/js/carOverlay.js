@@ -86,6 +86,10 @@
 			map.addOverlay(marker);
 		}
 		
+		this.setDate = function(date) {
+			data.date = date.toUTCString();
+		}
+		
 		init();
 	}
 })();

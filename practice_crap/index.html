@@ -25,6 +25,7 @@
 <script type="text/javascript" src="../view/js/wak.js"></script>
 <script type="text/javascript" src="../view/js/carOverlay.js"></script>
 <script type="text/javascript" src="../view/js/dialogs.js"></script>
+<script type="text/javascript" src="../view/js/day.js"></script>
 <script type="text/javascript">
 	$(function() {
 		var map = new GMap2(document.getElementById("map_canvas"));
@@ -42,6 +43,15 @@
 		
 		initAddDialog(map);
 		
+		$.getJSON(
+			'http://128.61.115.235:8000/getCars',
+			function(data) {
+				var a = new WAKDay(new Date());
+				a.loadCars(data);
+				a.render(map);
+			}
+		);
+
 	});
 </script>
 <div id="doc2" class="yui-t7">
