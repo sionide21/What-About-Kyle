@@ -5,22 +5,32 @@
    <title>What About Kyle?</title>
    <link rel="stylesheet" href="http://yui.yahooapis.com/2.7.0/build/reset-fonts-grids/reset-fonts-grids.css" type="text/css">
    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.0r4/build/base/base-min.css">
+   <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.0r4/build/fonts/fonts-min.css" />
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.0r4/build/button/assets/skins/sam/button.css" />
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.0r4/build/container/assets/skins/sam/container.css" />
+   <link rel="stylesheet" href="../view/css/main.css" type="text/css">
 </head>
-<body onunload="GUnload()">
+<body onunload="GUnload()" class="yui-skin-sam">
+
+<!-- YUI Dialog Stuff -->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/connection/connection-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/element/element-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/button/button-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/dragdrop/dragdrop-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/container/container-min.js"></script>
+
 <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=ABQIAAAAGDdf_nC4iDfqhvjcgc-9GBQoRtT7WMMfqjastn1YMcb_xa202xRqrdfywvew-1OKeWV9C02GyHC0jA" type="text/javascript"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 <script type="text/javascript" src="../view/js/wak.js"></script>
 <script type="text/javascript" src="../view/js/carOverlay.js"></script>
+<script type="text/javascript" src="../view/js/dialogs.js"></script>
 <script type="text/javascript">
 	$(function() {
 		var map = new GMap2(document.getElementById("map_canvas"));
 		// Georgia Tech
 		map.setCenter(new GLatLng(33.7784626, -84.3988806), 15);
-        
-
-		
-		
-
+      
 		map.setUIToDefault();
 		$('form#locationBox').submit(function() {
 			var query = $('#locationBoxField').val();
@@ -30,14 +40,7 @@
 			return false;
 		});
 		
-		$('button#addCar').click(function() {
-			var listener = GEvent.addListener(map, "click", function(overlay, point) {
-				if (!overlay) {
-					new CarOverlay(point).place(map);
-					GEvent.removeListener(listener);
-				}
-			});
-		});
+		initAddDialog(map);
 		
 	});
 </script>
@@ -45,11 +48,10 @@
    <div id="hd"><h1>Header</h1></div>
    <div id="bd" role="main">
 	<div role="navigation" class="yui-g">
-	<form id="locationBox" action="#">
-		<input type="text" id="locationBoxField" /> <input type="submit" value="Update Location"/>
-	</form>
-	<button id="addCar">Add Car</button>
-	<!-- YOUR DATA GOES HERE -->
+		<form id="locationBox" action="#">
+			<input type="text" id="locationBoxField" /> <input type="submit" value="Update Location"/>
+		</form>
+		<button id="addCar">Add Car</button>
 	</div>
 <div role="application" class="yui-g">
 	
@@ -59,9 +61,32 @@
 	</div>
    <div id="ft" role="contentinfo"><p>Footer</p></div>
 </div>
+
+<!-- Hidden Stuff For Dialogs and Junk -->
 <div id="carInfo" style="display:none">
-	<h1>Hello World</h1>
-	<ul><li>1</li><li>2</li></ul>
+	<h2 style="margin-top: 0px">#{driver}'s Car</h2>
+	Total Seats: #{numSeats}<br/>
+	Passengers:
+	<ul>
+	 	#{passengerList}
+		<li class="input">
+			<form action="#" class="addPassengerBox">
+				<input type="text" class="addPassengerBox" />
+			</form>
+		</li>
+	</ul>
 </div>
+
+<div id="addDialog" class="yui-pe-content">
+	<div class="hd">Add Car</div>
+	<div class="bd">
+		<form action="#" id="addCarForm">
+				<label for="driver">Driver:</label><input type="text" name="driver"/><br/>
+				<label for="numSeats"># Passengers:</label><input type="text" name="numSeats"/><br/>
+				<label for="dest">Destination:</label><input type="text" name="dest"/><br/>
+			</form>
+	</div>
+</div>
+
 </body>
 </html>
