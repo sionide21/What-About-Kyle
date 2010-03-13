@@ -312,8 +312,8 @@ Db.prototype.saveDoc = function(id, doc, cb) {
 Db.prototype.removeDoc = function(id, rev, cb) {
   return this.request({
     method: 'DELETE',
-    path: '/'+id,
-    query: {rev: rev}
+    path: '/'+id + '?rev=' + rev
+//    query: {rev: rev}
   }, cb);
 };
 
