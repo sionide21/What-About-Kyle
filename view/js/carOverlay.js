@@ -51,7 +51,7 @@
 				removePassenger(this);
 			});
 			
-			if (data.passengers.length >= data.numSeats) {
+			if (data.passengers && data.passengers.length >= data.numSeats) {
 				$('UL LI.input', dom).hide();
 			}
 			return dom;
