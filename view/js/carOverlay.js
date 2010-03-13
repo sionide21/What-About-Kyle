@@ -41,7 +41,7 @@
 				msgBox.prompt(
 					'Are you sure you want to delete this car?', 
 					function() {
-						map.removeOverlay(marker);
+						my.removeCar();
 						updateHandler.deleteCar(my);
 					}
 				);
@@ -66,6 +66,21 @@
 				$('UL LI.input', formPane).show();
 			}
 			updateHandler.saveCar(my, true);
+		}
+		
+		function refreshPassengers() {
+			if (!formPane) { return; }
+			$('UL LI.passenger', formPane).remove();
+			
+			$.each(data.passengers, function() {
+				$('UL LI.input', formPane).before('<li class="passenger">' + this + '</li>');
+			});
+			
+			if (data.passengers && data.passengers.length >= data.numSeats) {
+				$('UL LI.input', formPane).hide();
+			} else {
+				$('UL LI.input', formPane).show();
+			}
 		}
 		
 		function addPassenger(name) {
@@ -107,6 +122,8 @@
 			data = json;
 			if (!skipRender) {
 				formPane = renderInfo();
+			} else if (formPane) {
+				refreshPassengers();
 			}
 			if (json.location) {
 				var point = new GLatLng(json.location.lat, json.location.lng);
@@ -121,6 +138,10 @@
 				lng: ll.lng()
 			};
 			return data;
+		}
+		
+		this.removeCar = function() {
+			map.removeOverlay(marker);
 		}
 		
 		this.place = function(m) {

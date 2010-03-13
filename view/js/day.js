@@ -21,7 +21,7 @@
 		
 		this.hide = function() {
 			$.each(my.cars, function() {
-				map.removeOverlay(this);
+				this.removeCar();
 			});
 			map = false;
 		}
@@ -43,7 +43,13 @@
 		}
 		
 		function carDeleted(json) {
-			
+			var match = $.grep(my.cars, function(val) {
+				return val.match(json);
+			});
+			if (match[0]) {
+				match[0].removeCar();
+				my.cars.splice(my.cars.indexOf(match[0]), 1);
+			}
 		}
 		
 		function carAdded(json) {
@@ -59,7 +65,7 @@
 				return val.match(json);
 			});
 			if (match[0]) {
-				match[0].load(json);
+				match[0].load(json, true);
 			}
 		}
 	}
