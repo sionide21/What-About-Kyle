@@ -21,3 +21,8 @@ label {
 	font-weight: bold;
 	left: 50%;
 }
+
+li.passenger:hover {
+	text-decoration: line-through;
+	cursor: pointer;
+}
