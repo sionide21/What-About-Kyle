@@ -34,11 +34,19 @@ http.createServer(function (req, res) {
   var paths = {
     "/getCars"    : getCarsForGroup,
     "/addCar"     : addCar,
-    "/modifyCar"  : modifyCar,
+    "/modifyCar"  : addCar,
+    //"/modifyCar"  : modifyCar,
     "/deleteCar"  : deleteCar,
     "/listen"     : listen,
     "/hello" : function(req, res, parsedUrl) {
-      db.getDoc('my-doc', function(er, doc) {
+      var body = "Hlelo world!";
+      res.writeHead({
+        'Content-type' : 'text/html',
+        'Content-length' : body.length
+      });
+      res.write(body);
+      res.close();
+      /*db.getDoc('my-doc', function(er, doc) {
         if (er) {
           throw er;
         } else {
@@ -50,6 +58,7 @@ http.createServer(function (req, res) {
         }
         res.close();
       });
+      */
     }
   };
   
@@ -62,7 +71,7 @@ http.createServer(function (req, res) {
   // does the expected path exist?
   if (paths[path]) {
     log('200: ' + path);
-    res.writeHead(200, {'Content-Type': 'application/json'});
+//    res.writeHead(200, {'Content-Type': 'application/json', "Content-Length": });
     paths[path](req, res, parsedUrl);
   } else {
     log('404: ' + path);
@@ -83,7 +92,6 @@ function log(output) {
 
 
 function addCar(req, res, parsedUrl) {
-
 // this is the form of a jsonobject representing a car the client should send
 //{
 //  "date": "March 12, 2010 11:30:00",
@@ -93,39 +101,71 @@ function addCar(req, res, parsedUrl) {
 //  "dest": "Taco Bell",
 //  "location": {
 //    "lat": 11,
-//    "lon": 22
+//    "lng": 22
 //  },
 //  "group": "coop"
 //}
 
-//  var car = parsedUrl.query.car;
-    //JSON.stringify(docs.rows)
-  var car = {
-    driver: parsedUrl.query.car
-  };
-  db.saveDoc(car);
-  
-  log("adding car: " + car);
+  if (parsedUrl.query && parsedUrl.query.car) {
+    var car = parsedUrl.query.car;
+    var carObj = JSON.parse(car);
+    var jsonCallback = parsedUrl.query.jsoncallback;
+    log('adding car: ' + carObj);
 
-  // add the car to the database
-  //TODO add car to database here instead of array
-  //cars.push(car);
+    // add the car to the database
+    db.saveDoc(carObj, function(er, doc) {
+      if (er) throw er;
+      db.getDoc(doc.id, function(er, doc) {
+        var docStr = jsonCallback + "(" + JSON.stringify(doc) + ");";
 
-  // notify all listening clients
-  for (var i = 0; i < listeners.length; i++) {
-    listeners[i].write(JSON.stringify(car));
-    listeners[i].close();
+        // return the newly added car to the client that uploaded it
+        res.writeHead(200, {
+          'Content-Type': 'text/plain',
+          'Content-Length': docStr.length});
+        res.write(docStr);
+        res.close();
+
+        // notify all listening clients
+        for (var i = 0; i < listeners.length; i++) {
+          listeners[i].writeHead(200, {
+            'Content-Type': 'text/plain',
+            'Content-Length': docStr.length});
+          listeners[i].write(docStr);
+          listeners[i].close();
+        }
+      });
+    });
+
+  } else {
+    res.writeHead(404, {'Content-Type': 'text/plain'});
+    res.close();
   }
-  res.close();
 }
 
 function modifyCar() {
 }
 
-function deleteCar() {
+function deleteCar(req, res, parsedUrl) {
+  var car = parsedUrl.query.car;
+  var carObj = JSON.parse(car);
+  var id = carObj.id;
+  var rev = carObj.rev;
+
+  //TODO implement group stuff
+//  var group = parsedUrl.query.group;
+
+  log('removing doc ' + id);
+  db.removeDoc(id, rev, function(er, doc) {
+    asdf;
+  });
+  log('done removing doc');
+  res.close();
+  log('called close');
 }
 
 function getCarsForGroup(req, res, parsedUrl) {
+
+  var jsonCallback = parsedUrl.query.jsoncallback;
 
   //TODO get group from request
   //var group = parsedUrl.query.group;
@@ -134,8 +174,6 @@ function getCarsForGroup(req, res, parsedUrl) {
     include_docs: true,
     limit: 1
   });
-
-  //log(query);
 
   var client = couchdb.createClient();
   client.request('/cars/_all_docs?include_docs=true', function(er, docs) {
@@ -148,8 +186,16 @@ function getCarsForGroup(req, res, parsedUrl) {
       retCars.push(docs.rows[i].doc);
     }
     
-    log(JSON.stringify(retCars));
-    res.write(JSON.stringify(retCars));
+
+/*    var retCarsStr = 
+'{  "date": "March 12, 2010 11:30:00",  "driver": "Alex",  "passengers": ["Nathan", "David"],  "numSeats": 4,  "dest": "Taco Bell",  "location": {   "lat": 11,    "lon": 22  },  "group": "coop"}';*/
+    
+    var retCarsStr = jsonCallback + "(" + JSON.stringify(retCars) + ");";
+    log(retCarsStr);
+    res.writeHead(200, {
+      'Content-Type': 'text/json', 
+      'Content-Length': retCarsStr.length});
+    res.write(retCarsStr);
     res.close();
   });
 }
