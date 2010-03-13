@@ -33,5 +33,15 @@ function Connection(url, group) {
 		   function(data){
 		   		car.load(data);
 		   });
+	};	
+	
+	this.saveCar = function(car, skipRender) {
+		var params = car.save();
+		params.group = group;
+		$.getJSON(conn('/modifyCar'), 
+			{car: JSON.stringify(params)},
+		   function(data){
+		   		car.load(data, skipRender);
+		   });
 	};
 };
