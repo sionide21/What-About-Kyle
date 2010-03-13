@@ -26,7 +26,7 @@ wak = {};
      * }
 	 */
 	wak.loadCar = function(json) {
-		var point = new GLatLng(json.location.lat, json.location.lat);
+		var point = new GLatLng(json.location.lat, json.location.lng);
 		var car = new CarOverlay(point);
 		car.load(json);
 		return car;
