@@ -114,11 +114,18 @@ function addCar(req, res, parsedUrl) {
     db.saveDoc(carObj, function(er, doc) {
       if (er) throw er;
       db.getDoc(doc.id, function(er, doc) {
-        var docStr = jsonCallback + "(" + JSON.stringify(doc) + ");";
+
+        var action = parsedUrl.pathname.substr(1);
+
+        var docJson = JSON.stringify(doc);
+        var docStr = jsonCallback + "(" + docJson + ");";
+        var listenStr = '{ status : "' + action + '", car: ' + docJson + '}';
+
+        log(listenStr);
 
         // return the newly added car to the client that uploaded it
         res.writeHead(200, {
-          'Content-Type': 'text/plain',
+          'Content-Type': 'text/json',
           'Content-Length': docStr.length});
         res.write(docStr);
         res.close();
@@ -126,9 +133,9 @@ function addCar(req, res, parsedUrl) {
         // notify all listening clients
         for (var i = 0; i < listeners.length; i++) {
           listeners[i].writeHead(200, {
-            'Content-Type': 'text/plain',
-            'Content-Length': docStr.length});
-          listeners[i].write(docStr);
+            'Content-Type': 'text/json',
+            'Content-Length': listenStr.length});
+          listeners[i].write(listenStr);
           listeners[i].close();
         }
       });
@@ -200,6 +207,7 @@ function getCarsForGroup(req, res, parsedUrl) {
 }
 
 function listen(req, res, parsedUrl) {
+  //TODO get only on a certain date
   //TODO get groupKey from request
   //var group = parsedUrl.query.group;
 
