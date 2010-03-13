@@ -119,11 +119,7 @@ function addCar(req, res, parsedUrl) {
 
         var docJson = JSON.stringify(doc);
         var docStr = jsonCallback + "(" + docJson + ");";
-        var listenStr = '{ status : "' + action + '", car: ' + docJson + '}';
 
-        log(listenStr);
-
-        // return the newly added car to the client that uploaded it
         res.writeHead(200, {
           'Content-Type': 'text/json',
           'Content-Length': docStr.length});
@@ -131,12 +127,13 @@ function addCar(req, res, parsedUrl) {
         res.close();
 
         // notify all listening clients
+        log("pushing " + action + " updates to " + listeners.length + " listeners.");
+
+        // return the newly added car to the client that uploaded it
+
         for (var i = 0; i < listeners.length; i++) {
-          listeners[i].writeHead(200, {
-            'Content-Type': 'text/json',
-            'Content-Length': listenStr.length});
-          listeners[i].write(listenStr);
-          listeners[i].close();
+          listeners[i](doc, action);
+  //var jsonCallback = parsedUrl.query.jsoncallback;
         }
       });
     });
@@ -211,8 +208,20 @@ function listen(req, res, parsedUrl) {
   //TODO get groupKey from request
   //var group = parsedUrl.query.group;
 
-  // add the request to the array of listeners
-  listeners.push(res);
+  // add the listenerr to the array of listeners
+  listeners.push(function (doc, action) {
+    var docStr = '{ status : "' + action + '", car: ' + JSON.stringify(doc) + '}';
+
+    log(docStr);
+
+    var jsonCallback = parsedUrl.query.jsoncallback;
+    var update = jsonCallback + "(" + docStr + ");";
+      res.writeHead(200, {
+        'Content-Type': 'text/json',
+        'Content-Length': update.length});
+      res.write(update);
+      res.close();
+  });
 
   // not calling res.close() here so that connection stays open.
   // this way, the client will get updates as soon as it occurs.
