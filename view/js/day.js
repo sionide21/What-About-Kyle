@@ -55,7 +55,12 @@
 		}
 		
 		function carModified(json) {
-			
+			var match = $.grep(my.cars, function(val) {
+				return val.match(json);
+			});
+			if (match[0]) {
+				match[0].load(json);
+			}
 		}
 	}
 	

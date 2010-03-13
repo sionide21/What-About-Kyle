@@ -57,7 +57,6 @@
 			map.removeOverlay(hack);
 		
 			con.loadDay(new Date(), function(day) {
-				//day = new WAKDay(new Date());
 				wak.currentDay = day;
 				day.listenForUpdates(con);
 				day.render(map);

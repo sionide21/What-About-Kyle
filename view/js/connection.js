@@ -54,7 +54,7 @@ function Connection(url, group) {
 		$.getJSON(conn('/listen'), params, 
 			function(data) {
 				if (data.status !== 'expired') {
-					callback(arguments);
+					callback(data);
 				}
 				listen(params, callback);
 			}
