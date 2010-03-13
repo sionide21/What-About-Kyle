@@ -65,12 +65,20 @@
 		}
 		
 		function saveInfo() {
-			console.log(this);
 		}	
 		
 		this.load = function(json) {
 			data = json;
 			formPane = renderInfo();
+		}
+		
+		this.save = function() {
+			var ll = marker.getLatLng();
+			data.pointOnMap = {
+				lat: ll.lat(),
+				lng: ll.lng()
+			};
+			return data;
 		}
 		
 		this.place = function(m) {
