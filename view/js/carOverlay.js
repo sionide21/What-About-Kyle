@@ -87,7 +87,6 @@
 		
 		this.setDate = function(date) {
 			data.date = date.toUTCString();
-			console.log(data);
 		}
 		
 		init();
