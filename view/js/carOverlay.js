@@ -71,10 +71,11 @@
 		function refreshPassengers() {
 			if (!formPane) { return; }
 			$('UL LI.passenger', formPane).remove();
-			
-			$.each(data.passengers, function() {
-				$('UL LI.input', formPane).before('<li class="passenger">' + this + '</li>');
-			});
+			if (data.passengers) {
+				$.each(data.passengers, function() {
+					$('UL LI.input', formPane).before('<li class="passenger">' + this + '</li>');
+				});
+			}
 			
 			if (data.passengers && data.passengers.length >= data.numSeats) {
 				$('UL LI.input', formPane).hide();
