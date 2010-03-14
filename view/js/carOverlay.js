@@ -30,7 +30,7 @@
 			});
 			html = html.replace(/#{passengerList}/i, pList);
 			
-			var dom = $('<div>' + html + '</div>')[0];
+			var dom = $('<div class="carInfo">' + html + '</div>')[0];
 			$('FORM.addPassengerBox', dom).submit(function() {
 				addPassenger($('FORM.addPassengerBox INPUT.addPassengerBox', dom).val());
 				$('FORM.addPassengerBox INPUT.addPassengerBox',dom).val('');

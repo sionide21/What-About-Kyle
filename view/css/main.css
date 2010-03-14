@@ -9,8 +9,9 @@ label {
 .messageHolder {
 	position: absolute;
 	top: 1px;
-	width: 100%;
+	width: 99%;
 	height: 2em;
+	overflow: hidden;
 }
 
 #messageArea {
@@ -25,4 +26,8 @@ label {
 li.passenger:hover {
 	text-decoration: line-through;
 	cursor: pointer;
+}
+
+.carInfo {
+	text-align: left
 }

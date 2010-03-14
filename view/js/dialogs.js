@@ -39,6 +39,20 @@ function initAddDialog(map) {
 	});
 };
 
+// Main Menu
+function initMainMenu() {
+	
+	var mainMenu = new YAHOO.widget.Panel("mainMenu", {
+	  	visible: true, 
+	  	context: [$('body')[0], 'tr', 'tr', ['windowResize'], [0, 20]], 
+	  	constraintoviewport: true,
+	  	close: false
+	});
+							
+	mainMenu.render();
+	mainMenu.show();
+};
+
 // Message Box
 msgBox = {};
 
