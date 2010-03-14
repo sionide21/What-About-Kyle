@@ -1,5 +1,5 @@
 
-var listeners = [];
+var listeners = {};
 
 var HOST = null;
 var PORT = 8000;
@@ -148,10 +148,12 @@ function listen(query, complete) {
   //TODO get only on a certain date
   var group = query.group;
 
+  if (!listeners[group]) {
+  	listeners[group] = [];
+  }
   // add the listener callback function to the array of listeners
-  listeners.push({
+  listeners[group].push({
     timestamp: new Date(),
-    group: group,
     callback: function (doc, action) {
       complete({
         status: action,
@@ -167,19 +169,22 @@ function listen(query, complete) {
 
 function clearExpired() {
   var now = new Date();
-  while (listeners.length > 0 && now - listeners[0].timestamp > LISTENER_TIMEOUT) {
-    listeners.shift().expire();
+  for (group in listeners) {
+	  while (listeners[group].length > 0 && now - listeners[group][0].timestamp > LISTENER_TIMEOUT) {
+		listeners[group].shift().expire();
+	  }
   }
 }
 
 function updateListeners(doc, action, group) {
   debug("group: " + group);
-  for (var i = 0; i < listeners.length; i++) {
-    // check if the listener is in the right group
-    debug("listener's group: " + listeners[i].group);
-    if (listeners[i].group === group) {
-      listeners[i].callback(doc, action);
-    }
+  
+  // If the group doesn't yet exist
+  if (!listeners[group]) {
+  	return;
+  }
+  for (var i = 0; i < listeners[group].length; i++) {
+      listeners[group][i].callback(doc, action);
   }
 }
 
