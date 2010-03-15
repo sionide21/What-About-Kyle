@@ -8,14 +8,14 @@ function Connection(url, group) {
 	this.loadDay = function(date, callback) {
 		var params = {
 			group: group,
-			date: date
+			date: date.toString()
 		};
 	
 		$.getJSON(
 			conn('/getCars'),
 			params,
 			function(data) {
-				var a = new WAKDay(new Date());
+				var a = new WAKDay(date);
 				a.loadCars(data);
 				callback(a);
 			}
@@ -64,7 +64,7 @@ function Connection(url, group) {
 	this.registerListener = function(date, listenerObject) {
 		var params = {
 			group: group,
-			date: date
+			date: date.toString()
 		};
 		
 		var callback = function(data) {

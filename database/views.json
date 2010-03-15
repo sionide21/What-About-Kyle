@@ -1,0 +1,8 @@
+{
+   "_id": "_design/search",
+   "views": {
+       "listCars": {
+           "map": "function(doc) { if (doc.date) { var d = new Date(doc.date); var date = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); emit([date, doc.group], doc); } }"
+       }
+   }
+}

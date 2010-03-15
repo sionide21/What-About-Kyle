@@ -83,9 +83,17 @@ http.createServer(function (req, res) {
 sys.puts('here we go again! (on port ' + PORT + ')')
 
 // this only outputs to the console if DEBUG flag is set
-function debug(output) {
+function debug(msg, item) {
   if (DEBUG) {
-    log(output);
+    if (item) {
+		if (typeof(item) !== 'string') {
+			log(msg + ": " + JSON.stringify(item));
+		} else {
+			log(msg + ": " + item);
+		}
+	} else {
+		log(msg);
+	}
   }
 }
 
@@ -98,12 +106,12 @@ function addCar(query, complete, error) {
   if (query && query.car) {
     var car = query.car;
     var carObj = JSON.parse(car);
-    debug('adding car: ' + carObj);
+    debug('adding car: ', carObj);
 
     // add the car to the database
     db.saveDoc(carObj, handleDb(function(doc) {
       db.getDoc(doc.id, handleDb(function(doc) {
-        complete(doc, carObj.group);
+        complete(doc, {group: carObj.group, date: dateString(carObj.date)});
       }, error));
     }, error));
   } else {
@@ -123,7 +131,7 @@ function deleteCar(query, complete, error) {
 
   debug('removing doc: id ' + id + '\nrev ' + rev);
   db.removeDoc(id, rev, handleDb(function(doc) {
-    complete(carObj, group);
+    complete(carObj, {group: carObj.group, date: dateString(carObj.date)});
   }, error));
 }
 
@@ -131,9 +139,9 @@ function getCarsForGroup(query, complete, error) {
 
   //TODO get cars for a certain date
 
-  var day = new Date(query.date);
+  var date = dateString(query.date);
   var group = query.group;
-  var queryUrl = '/cars/_design/search/_view/groupsearch?include_docs=true&key="' + group + '"';
+  var queryUrl = '/cars/_design/search/_view/listCars?include_docs=true&key=["' + date + '","' + group + '"]';
   var client = couchdb.createClient(DBPORT, DBHOST);
   
   client.request(queryUrl, handleDb(function(docs) {
@@ -146,14 +154,18 @@ function getCarsForGroup(query, complete, error) {
 }
 
 function listen(query, complete) {
-  //TODO get only on a certain date
-  var group = query.group;
+  group = query.group;
+  date = dateString(query.date);
 
   if (!listeners[group]) {
   	listeners[group] = [];
   }
+  if (!listeners[group][date]) {
+  	listeners[group][date] = [];
+  }
   // add the listener callback function to the array of listeners
-  listeners[group].push({
+  debug('Adding listener', [group, date]);
+  listeners[group][date].push({
     timestamp: new Date(),
     callback: function (doc, action) {
       complete({
@@ -171,21 +183,23 @@ function listen(query, complete) {
 function clearExpired() {
   var now = new Date();
   for (group in listeners) {
-	  while (listeners[group].length > 0 && now - listeners[group][0].timestamp > LISTENER_TIMEOUT) {
-		listeners[group].shift().expire();
+	  for (var i = 0; i < listeners[group].length; i++) {
+		  while (listeners[group][i].length > 0 && now - listeners[group][i][0].timestamp > LISTENER_TIMEOUT) {
+			listeners[group][i].shift().expire();
+		  }
 	  }
   }
 }
 
 function updateListeners(doc, action, group) {
-  debug("group: " + group);
+  debug("group: ", group);
   
   // If the group doesn't yet exist
-  if (!listeners[group]) {
+  if (!listeners[group.group] && !listeners[group.group][group.date]) {
   	return;
   }
-  for (var i = 0; i < listeners[group].length; i++) {
-      listeners[group][i].callback(doc, action);
+  for (var i = 0; i < listeners[group.group][group.date].length; i++) {
+      listeners[group.group][group.date][i].callback(doc, action);
   }
 }
 
@@ -197,6 +211,11 @@ function handleDb(func,error) {
       }
       func(doc);
     }
+}
+
+function dateString(date) {
+  var day = new Date(date);
+  return day.getFullYear() + '-' + (day.getMonth() + 1) + '-' + day.getDate();
 }
 
 function printError(er) {
